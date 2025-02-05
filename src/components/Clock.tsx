@@ -2,28 +2,40 @@ import React from 'react';
 
 type Props = {
   clockName: string;
+  showClock: boolean;
 };
 
 type State = {
-  today: Date;
+  time: Date;
 };
 
 export class Clock extends React.Component<Props, State> {
   state: State = {
-    today: new Date(),
+    time: new Date(),
   };
 
   timerId = 0;
 
   updateClock = () => {
-    this.setState({ today: new Date() }, () =>
+    this.setState({ time: new Date() }, () =>
       // eslint-disable-next-line no-console
-      console.log(this.state.today.toUTCString().slice(-12, -4)),
+      console.log(this.state.time.toUTCString().slice(-12, -4)),
     );
   };
 
   componentDidMount(): void {
-    this.timerId = window.setInterval(this.updateClock, 1000);
+    if (this.props.showClock) {
+      this.timerId = window.setInterval(this.updateClock, 1000);
+    }
+  }
+
+  componentDidUpdate(prevProps: Readonly<Props>): void {
+    if (prevProps.clockName !== this.props.clockName) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `Renamed from ${prevProps.clockName} to ${this.props.clockName}`,
+      );
+    }
   }
 
   componentWillUnmount(): void {
@@ -32,16 +44,14 @@ export class Clock extends React.Component<Props, State> {
 
   render(): React.ReactNode {
     const { clockName } = this.props;
-    const { today } = this.state;
+    const { time } = this.state;
 
     return (
       <div className="Clock">
         <strong className="Clock__name">{clockName}</strong>
 
         {' time is '}
-        <span className="Clock__time">
-          {today.toUTCString().slice(-12, -4)}
-        </span>
+        <span className="Clock__time">{time.toUTCString().slice(-12, -4)}</span>
       </div>
     );
   }
