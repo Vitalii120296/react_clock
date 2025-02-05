@@ -25,6 +25,7 @@ export class App extends React.Component<Props, State> {
 
   rightClick = (event: MouseEvent) => {
     event.preventDefault();
+    window.clearInterval(this.timerId);
     this.setState({ hasClock: false });
   };
 
@@ -33,32 +34,35 @@ export class App extends React.Component<Props, State> {
     this.setState({ hasClock: true });
   };
 
+  update() {
+    if (this.state.hasClock) {
+      window.clearInterval(this.timerId);
+      this.timerId = window.setInterval(() => {
+        this.setState((prevState: State) => {
+          const newName = getRandomName();
+
+          // eslint-disable-next-line no-console
+          console.warn(`Renamed from ${prevState.clockName} to ${newName}`);
+
+          return { clockName: newName };
+        });
+      }, 3300);
+    }
+  }
+
   componentDidMount(): void {
-    this.timerId = window.setInterval(() => {
-      this.setState((prevState: State) => {
-        const newName = getRandomName();
-
-        // eslint-disable-next-line no-console
-        console.warn(`Renamed from ${prevState.clockName} to ${newName}`);
-
-        return { clockName: newName };
-      });
-    }, 3300);
+    this.update();
 
     document.addEventListener('click', this.leftClick);
     document.addEventListener('contextmenu', this.rightClick);
   }
 
-  componentDidUpdate(prevState: { hasClock: boolean }) {
-    if (prevState.hasClock && !this.state.hasClock) {
-      window.clearInterval(this.timerId);
-    }
+  componentDidUpdate() {
+    this.update();
   }
 
   componentWillUnmount(): void {
     window.clearInterval(this.timerId);
-    document.removeEventListener('click', this.leftClick);
-    document.removeEventListener('contextmenu', this.rightClick);
   }
 
   render() {
